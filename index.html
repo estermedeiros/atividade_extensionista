@@ -202,6 +202,27 @@
     </footer>
 
     <script>
+        function obterFeedbacks() {
+            try {
+                const dados = localStorage.getItem('feedbacks');
+                return dados ? JSON.parse(dados) : [];
+            } catch (erro) {
+                console.error('Erro ao carregar feedbacks:', erro);
+                return [];
+            }
+        }
+
+        function salvarFeedbacks(feedbacks) {
+            try {
+                localStorage.setItem('feedbacks', JSON.stringify(feedbacks));
+                return true;
+            } catch (erro) {
+                console.error('Erro ao salvar feedbacks:', erro);
+                alert('Não foi possível salvar o feedback. Verifique o espaço disponível.');
+                return false;
+            }
+        }
+
         // Estrelas
         const starsContainer = document.getElementById('starsContainer');
         for (let i = 1; i <= 5; i++) {
@@ -230,24 +251,26 @@
                 return;
             }
             
-            let feedbacks = JSON.parse(localStorage.getItem('feedbacks')) || [];
+            let feedbacks = obterFeedbacks();
             feedbacks.push({ nome, comentario, rating, data: new Date().toLocaleDateString('pt-BR') });
-            localStorage.setItem('feedbacks', JSON.stringify(feedbacks));
             
-            e.target.reset();
-            document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
-            document.getElementById('rating').value = 0;
-            mostrarFeedbacks();
+            if (salvarFeedbacks(feedbacks)) {
+                e.target.reset();
+                document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
+                document.getElementById('rating').value = 0;
+                mostrarFeedbacks();
+            }
         });
         
         function mostrarFeedbacks() {
             const listDiv = document.getElementById('feedbacksList');
-            let feedbacks = JSON.parse(localStorage.getItem('feedbacks')) || [];
+            let feedbacks = obterFeedbacks();
             listDiv.innerHTML = feedbacks.length === 0 
                 ? '<p class="no-feedbacks">Nenhum feedback ainda</p>'
-                : feedbacks.reverse().map(f => 
-                    `<div class="feedback-item"><strong>${f.nome}</strong> <span class="feedback-date">${f.data}</span><span class="rating-stars">${'★'.repeat(f.rating)}${'☆'.repeat(5-f.rating)}</span><p>${f.comentario}</p></div>`
-                ).join('');
+                : feedbacks.reverse().map(f => {
+                    const rating = parseInt(f.rating);
+                    return `<div class="feedback-item"><strong>${f.nome}</strong> <span class="feedback-date">${f.data}</span><span class="rating-stars">${'★'.repeat(rating)}${'☆'.repeat(5-rating)}</span><p>${f.comentario}</p></div>`;
+                }).join('');
         }
         mostrarFeedbacks();
 
