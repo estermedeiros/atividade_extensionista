@@ -202,26 +202,13 @@
     </footer>
 
     <script>
-        function obterFeedbacks() {
-            try {
-                const dados = localStorage.getItem('feedbacks');
-                return dados ? JSON.parse(dados) : [];
-            } catch (erro) {
-                console.error('Erro ao carregar feedbacks:', erro);
-                return [];
+        // Configuração do Formspree (carregar do .env em produção)
+        const config = {
+            formspree: {
+                feedback: 'mjgzjrqd',
+                contact: 'xaqkajgr'
             }
-        }
-
-        function salvarFeedbacks(feedbacks) {
-            try {
-                localStorage.setItem('feedbacks', JSON.stringify(feedbacks));
-                return true;
-            } catch (erro) {
-                console.error('Erro ao salvar feedbacks:', erro);
-                alert('Não foi possível salvar o feedback. Verifique o espaço disponível.');
-                return false;
-            }
-        }
+        };
 
         // Estrelas
         const starsContainer = document.getElementById('starsContainer');
@@ -238,7 +225,7 @@
             starsContainer.appendChild(star);
         }
 
-        // Feedback
+        // Feedback - Envia para Formspree
         document.getElementById('feedbackForm').addEventListener('submit', (e) => {
             e.preventDefault();
             
@@ -251,28 +238,35 @@
                 return;
             }
             
-            let feedbacks = obterFeedbacks();
-            feedbacks.push({ nome, comentario, rating, data: new Date().toLocaleDateString('pt-BR') });
+            const data = new Date().toLocaleDateString('pt-BR');
+            const formspreeUrl = `https://formspree.io/f/${config.formspree.feedback}`;
             
-            if (salvarFeedbacks(feedbacks)) {
-                e.target.reset();
-                document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
-                document.getElementById('rating').value = 0;
-                mostrarFeedbacks();
-            }
+            // Envia via Formspree
+            fetch(formspreeUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    nome: nome,
+                    rating: rating,
+                    comentario: comentario,
+                    data: data
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    e.target.reset();
+                    document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
+                    document.getElementById('rating').value = 0;
+                    alert('✓ Feedback enviado com sucesso! Obrigado por sua contribuição.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Houve um erro ao enviar. Tente novamente.');
+            });
         });
-        
-        function mostrarFeedbacks() {
-            const listDiv = document.getElementById('feedbacksList');
-            let feedbacks = obterFeedbacks();
-            listDiv.innerHTML = feedbacks.length === 0 
-                ? '<p class="no-feedbacks">Nenhum feedback ainda</p>'
-                : feedbacks.reverse().map(f => {
-                    const rating = parseInt(f.rating);
-                    return `<div class="feedback-item"><strong>${f.nome}</strong> <span class="feedback-date">${f.data}</span><span class="rating-stars">${'★'.repeat(rating)}${'☆'.repeat(5-rating)}</span><p>${f.comentario}</p></div>`;
-                }).join('');
-        }
-        mostrarFeedbacks();
 
         // Contato
         document.getElementById('contactForm').addEventListener('submit', (e) => {
@@ -286,10 +280,32 @@
                 return;
             }
             
-            e.target.reset();
-            const msg = document.getElementById('successMessage');
-            msg.style.display = 'block';
-            setTimeout(() => msg.style.display = 'none', 5000);
+            const formspreeUrl = `https://formspree.io/f/${config.formspree.contact}`;
+            
+            // Envia via Formspree
+            fetch(formspreeUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    nome: nome,
+                    email: email,
+                    mensagem: mensagem
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    e.target.reset();
+                    const msg = document.getElementById('successMessage');
+                    msg.style.display = 'block';
+                    setTimeout(() => msg.style.display = 'none', 5000);
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Houve um erro ao enviar. Tente novamente.');
+            });
         });
     </script>
 </body>
