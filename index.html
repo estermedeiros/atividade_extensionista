@@ -202,7 +202,6 @@
     </footer>
 
     <script>
-        // Configuração do Formspree (carregar do .env em produção)
         const config = {
             formspree: {
                 feedback: 'mjgzjrqd',
@@ -210,7 +209,6 @@
             }
         };
 
-        // Estrelas
         const starsContainer = document.getElementById('starsContainer');
         for (let i = 1; i <= 5; i++) {
             const star = document.createElement('span');
@@ -225,7 +223,6 @@
             starsContainer.appendChild(star);
         }
 
-        // Feedback - Envia para Formspree
         document.getElementById('feedbackForm').addEventListener('submit', (e) => {
             e.preventDefault();
             
@@ -241,7 +238,6 @@
             const data = new Date().toLocaleDateString('pt-BR');
             const formspreeUrl = `https://formspree.io/f/${config.formspree.feedback}`;
             
-            // Envia via Formspree
             fetch(formspreeUrl, {
                 method: 'POST',
                 headers: {
@@ -268,7 +264,6 @@
             });
         });
 
-        // Contato
         document.getElementById('contactForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const nome = document.getElementById('nome').value.trim();
@@ -282,7 +277,6 @@
             
             const formspreeUrl = `https://formspree.io/f/${config.formspree.contact}`;
             
-            // Envia via Formspree
             fetch(formspreeUrl, {
                 method: 'POST',
                 headers: {
